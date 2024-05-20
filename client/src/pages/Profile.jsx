@@ -16,9 +16,10 @@ import {
   deleteUserFailure,
   signOut,
 } from "../redux/user/userSlice";
+import { toast } from "react-toastify";
 
 const Profile = () => {
-  const { currentUser, loading, error } = useSelector((state) => state.user);
+  const { currentUser, loading } = useSelector((state) => state.user);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
   const [imageError, setImageError] = useState(false);
@@ -57,11 +58,12 @@ const Profile = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       dispatch(updateUserStart());
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
@@ -73,14 +75,17 @@ const Profile = () => {
       });
       const data = await res.json();
 
-      if (data.success === false) {
+      if (!res.ok) {
         dispatch(updateUserFailure(data));
+        toast.error(data.message || "Something went wrong, Try again!");
         return;
       }
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
+      toast.success("User is Updated Successfully!");
     } catch (error) {
       dispatch(updateUserFailure(error));
+      toast.error("Something went wrong, Try again!");
     }
   };
 
@@ -91,13 +96,18 @@ const Profile = () => {
         method: "DELETE",
       });
       const data = await res.json();
-      if (data.success === false) {
+      console.log(res);
+      console.log(data);
+      if (!res.ok) {
         dispatch(deleteUserFailure(data));
+        toast.error(data.message || "Something went wrong, Try again!");
         return;
       }
       dispatch(deleteUserSuccess(data));
+      toast.success("User has been deleted successfully!");
     } catch (error) {
       dispatch(deleteUserFailure(error));
+      toast.error("Something went wrong, Try again!");
     }
   };
 
@@ -105,8 +115,9 @@ const Profile = () => {
     try {
       await fetch("api/auth/signout");
       dispatch(signOut());
+      toast.success("User Sign Out Successfully!");
     } catch (error) {
-      console.log(error);
+      toast.error("Something went wrong, Try again!");
     }
   };
 
@@ -178,10 +189,6 @@ const Profile = () => {
           Sign out
         </span>
       </div>
-      <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
-      <p className="text-green-700 mt-5">
-        {updateSuccess && "User is updated successfully!"}
-      </p>
     </div>
   );
 };

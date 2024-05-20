@@ -12,6 +12,7 @@ const userSlice = createSlice({
   reducers: {
     signInStart: (state) => {
       state.loading = true;
+      state.error = false;
     },
     signInSuccess: (state, action) => {
       state.currentUser = action.payload;
@@ -24,6 +25,7 @@ const userSlice = createSlice({
     },
     updateUserStart: (state) => {
       state.loading = true;
+      state.error = false;
     },
     updateUserSuccess: (state, action) => {
       state.currentUser = action.payload;
@@ -36,6 +38,7 @@ const userSlice = createSlice({
     },
     deleteUserStart: (state) => {
       state.loading = true;
+      state.error = false;
     },
     deleteUserSuccess: (state) => {
       state.currentUser = null;

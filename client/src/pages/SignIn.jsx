@@ -7,19 +7,25 @@ import {
 } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
+import { toast } from "react-toastify";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const { loading, error } = useSelector((state) => state.user);
+  const { loading } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email || !formData.password) {
+      return toast.error("Please fill out all fields!");
+    }
+
     try {
       dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {
@@ -30,15 +36,18 @@ const SignIn = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-
-      if (data.success === false) {
+      
+      if (!res.ok) {
         dispatch(signInFailure(data));
-        return;
+        return toast.error(data.message || "Something went wrong, Try again!");
       }
+
       dispatch(signInSuccess(data));
+      toast.success("User Sign In Successfully!");
       navigate("/");
     } catch (error) {
       dispatch(signInFailure(error));
+      toast.error("Something went wrong, Try again!");
     }
   };
 
@@ -74,9 +83,6 @@ const SignIn = () => {
           <span className="text-blue-500">Sign up</span>
         </Link>
       </div>
-      <p className="text-red-700 pt-5">
-        {error ? error.message || "Something went wrong" : ""}
-      </p>
     </div>
   );
 };

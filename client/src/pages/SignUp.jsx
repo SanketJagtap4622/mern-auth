@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({});
@@ -9,11 +10,16 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.username || !formData.email || !formData.password) {
+      return toast.error("Please fill out all fields!");
+    }
+
     try {
       setLoading(true);
       setError(false);
@@ -25,16 +31,20 @@ const SignUp = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      // console.log(data);
       setLoading(false);
-      if (data.success === false) {
+
+      if (!res.ok) {
         setError(true);
+        toast.error(data.message || "Something went wrong, Try again!");
         return;
       }
+      
+      toast.success("User Sign Up Successfully!");
       navigate("/sign-in");
     } catch (error) {
       setLoading(false);
       setError(true);
+      toast.error("Something went wrong, Try again!");
     }
   };
 
@@ -77,7 +87,6 @@ const SignUp = () => {
           <span className="text-blue-500">Sign in</span>
         </Link>
       </div>
-      {error && <p className="text-red-700 pt-5">Something went wrong</p>}
     </div>
   );
 };
